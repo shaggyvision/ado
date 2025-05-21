@@ -1,10 +1,11 @@
+
 {
-    "name": "Xudapu Chat",
-    "short_name": "Xudapu",
-    "start_url": ".",
+    "name": "Recaudación VHT",
+    "short_name": "VHT",
+    "start_url": "./index.html",
     "display": "standalone",
-    "background_color": "#000000",
-    "theme_color": "#8A2BE2",
+    "background_color": "#ffffff",
+    "description": "Agente de Copilot para recaudación VHT",
     "icons": [
         {
             "src": "icon-192.png",
