@@ -1,11 +1,16 @@
 
-body {
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 20px;
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
 }
-h1 {
-    color: #333;
+
+/* Forzar opciones (botones) en vertical */
+.ac-actionSet {
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+.ac-pushButton {
+  margin: 5px 0 !important;
 }
