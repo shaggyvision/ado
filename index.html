@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Chatbot Recaudación - Demo</title>
+<style>
+  :root{
+        --bg:#e5ddd5;
+    --me:#25d366;
+    --me-text:#002b18;
+    --bot:#ffffff;
+    --bot-text:#111;
+    --accent:#6A0DAD;
+    --accent2:#8E44AD;
+    --muted:#888;
+    --chat-width:420px;
+  }
+  body{
+    background: linear-gradient(180deg,#f2f2f2,#e9eef0);
+    font-family: Inter, "Segoe UI", Roboto, sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    margin:0;
+  }
+  .container{
+    width: min(var(--chat-width), 96vw);
+    height: 88vh;
+    background: #f7f7f7;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(15,20,25,0.12);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .header {
+    padding: 12px;
+    background: linear-gradient(90deg, var(--accent), #0b8b72);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .header .info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 42px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+  .header .title {
+    font-weight: 700;
+    color: white;
+  }
+  .header .small {
+    color: white;
+  }
+  .header img {
+    height: 42px;
+  }
+  .chat{
+    flex:1;
+    padding:16px;
+    overflow:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    background:
+      radial-gradient(circle at top left, rgba(255,255,255,0.6), transparent 10%),
+      var(--bg);
+  }
+  .bubble{
+    max-width:78%;
+    padding:10px 12px;
+    border-radius:12px;
+    line-height:1.3;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+    word-wrap:break-word;
+  }
+  .bot{
+    align-self:flex-start;
+    background:var(--bot);
+    color:var(--bot-text);
+    border-bottom-left-radius:4px;
+  }
+  .me{
+    align-self:flex-end;
+    background:var(--me);
+    color:var(--me-text);
+    border-bottom-right-radius:4px;
+  }
+  .time{
+    display:block;
+    font-size:11px;
+    color:var(--muted);
+    margin-top:6px;
+  }
+  .options{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:8px;
+  }
+  .option-btn{
+    background:rgba(0,0,0,0.06);
+    border:0;
+    padding:8px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .option-btn:hover{filter:brightness(.98)}
+  .option-btn.primary{
+    background:var(--accent);
+    color:white;
+  }
+  .footer{
+    padding:10px;
+    border-top:1px solid rgba(0,0,0,0.06);
+    display:flex;
+    gap:8px;
+    align-items:center;
+    background:white;
+  }
+  .restart{
+    margin-left:auto;
+    background:transparent;
+    border:1px solid rgba(0,0,0,0.08);
+    padding:6px 10px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .link-card{
+    display:block;
+    margin-top:8px;
+    padding:8px;
+    border-radius:8px;
+    background:linear-gradient(180deg, #fff,#fafafa);
+    border:1px solid rgba(0,0,0,0.05);
+    text-decoration:none;
+    color:inherit;
+  }
+  .small{
+    font-size:13px;
+    color:var(--muted);
+  }
+</style>
+</head>
+<body>
+  <div class="container" role="application" aria-label="Chatbot Recaudación">
+    <div class="header">
+      <div class="info">
+        <div class="avatar" aria-hidden="true">
+          <img src="https://i.imgur.com/HxtukD7.png" alt="Robot asistente" />
+        </div>
+        <div>
+          <div class="title">Asistente Abordo</div>
+          <div class="small">Recaudacion VHT</div>
+        </div>
+      </div>
+      <img src="https://i.imgur.com/JR2H391.png" alt="Logo Mobility ADO" />
+    </div>
+
+
+
+    <div id="chat" class="chat" aria-live="polite"></div>
+
+    <div class="footer">
+      <div class="small">Selecciona una opción para continuar</div>
+      <button id="restart" class="restart" title="Reiniciar">Reiniciar</button>
+    </div>
+  </div>
+
+<script>
+/*
+  Chatbot flow derived from kind AdaptiveDialog.txt
+  - Each node can be a question with options or a sendActivity (message) then returns a REGRESAR option
+  - REGRESAR pops the history stack to the previous question
+  - No server / no storage
+*/
+
+const chatEl = document.getElementById('chat');
+const restartBtn = document.getElementById('restart');
+
+function nowTime(){ const d=new Date(); return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+function scrollEnd(){ setTimeout(()=> chatEl.scrollTop = chatEl.scrollHeight, 80); }
+
+function addBotBubble(html, options=null){
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble bot';
+  wrap.innerHTML = html;
+  const time = document.createElement('div');
+  time.className = 'time';
+  time.textContent = nowTime();
+  wrap.appendChild(time);
+
+  chatEl.appendChild(wrap);
+
+  if(options){
+    const optDiv = document.createElement('div');
+    optDiv.className = 'options';
+    options.forEach(opt=>{
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      if(opt.primary) btn.classList.add('primary');
+      btn.innerText = opt.label;
+      btn.onclick = ()=> handleOption(opt);
+      optDiv.appendChild(btn);
+    });
+    chatEl.appendChild(optDiv);
+  }
+  scrollEnd();
+}
+
+function addUserBubble(text){
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble me';
+  wrap.textContent = text;
+  const time = document.createElement('div');
+  time.className = 'time';
+  time.textContent = nowTime();
+  wrap.appendChild(time);
+  chatEl.appendChild(wrap);
+  scrollEnd();
+}
+
+// Node definitions (full flow)
+const nodes = {
+  main: {
+    type:'question',
+    id:'main',
+    prompt: 'Hola, soy tu asistente virtual de Recaudación, y estoy para responder tus dudas, deseas iniciar?',
+    options:[
+      {id:'SI', label:'SI', next:'menuPrincipal'},
+      {id:'NO', label:'NO', next:'endNo'}
+    ]
+  },
+  endNo:{ type:'message', id:'endNo', text:'Perfecto. Si necesitas ayuda después, puedes reiniciar el chat.'},
+
+  menuPrincipal:{
+    type:'question',
+    id:'menuPrincipal',
+    prompt: 'ELIJE UNA OPCION',
+    options:[
+      {id:'SUELDOS_Y_CARTERA', label:'SUELDOS Y CARTERA', next:'sueldo_menu'},
+      {id:'INCENTIVOS', label:'INCENTIVOS', next:'incentivos_marca'},
+      {id:'PROCESO_COVA', label:'PROCESO COVA', next:'proceso_cova'},
+      {id:'CREDITOS_EXTERNOS', label:'CREDITOS EXTERNOS', next:'creditos_externos'},
+      {id:'HABLAR_CON_UN_ASESOR', label:'HABLAR CON UN ASESOR', next:'hablar_asesor'}
+    ]
+  },
+
+  hablar_asesor:{
+    type:'message',
+    id:'hablar_asesor',
+    text: 'Si deseas hablar con un asesor, haz clic en el enlace de atención. (Abrirá una página externa).',
+attachments: [{type:'image', url:'https://i.imgur.com/8c55MdW.png', link:'https://bit.ly/3JCa8hL'}]
+  },
+
+  sueldo_menu:{
+    type:'question',
+    id:'sueldo_menu',
+    prompt:'SELECCIONA UNA OPCION',
+    options:[
+      {id:'FACTOR_PASAJERO', label:'¿Cuánto debo de ingresar para alcanzar Factor Pasajero?', next:'factor_pasajero'},
+      {id:'COMO_CALCULO_SUELDO', label:'¿Cómo cálculo mi sueldo?', next:'calcula_sueldo_marca'},
+      {id:'QUE_CONCEPTOS', label:'¿Qué conceptos me descuentan en Nómina?', next:'conceptos_nomina'},
+      {id:'CUANTO_ISR', label:'¿Cuánto me descuentan  de ISR al mes?', next:'cuanto_isr_marca'},
+      {id:'CUANTO_IMSS', label:'¿Cuánto me descuentan  de IMSS al mes?', next:'cuanto_imss_marca'},
+      {id:'CUOTA_SINDICAL', label:'¿Cómo se calcula la  Cuota sindical al mes?', next:'cuota_sindical_marca'},
+      {id:'DESCUENTO_FONDO', label:'¿Cuánto es el descuento de Fondo de ahorro?', next:'descuento_fondo_marca'},
+      {id:'FECHA_FONDO', label:'¿Cuál es la fecha límite para cubrir mi Fondo de Ahorro?', next:'fecha_fondo'},
+      {id:'QUE_SON_EXCEDENTES', label:'¿Qué son los excedentes?', next:'excedentes'},
+      {id:'CUANTO_IMPUESTOS', label:'¿Cuánto debo de impuestos?', next:'impuestos_link'},
+      {id:'REGRESAR', label:'REGRESAR', next:'menuPrincipal'}
+    ]
+  },
+
+  factor_pasajero:{
+    type:'message',
+    id:'factor_pasajero',
+    text: 'Te invitamos a usar la siguiente aplicación, donde podrás tener el factor mínimo de las corridas donde operas.',
+    attachments: [{type:'image', url:'https://i.imgur.com/IdSmNOH.png', link:'https://bit.ly/4fJvTsj'}]
+  },
+
+  calcula_sueldo_marca:{
+    type:'question',
+    id:'calcula_sueldo_marca',
+    prompt:'SELECCIONA TU MARCA',
+    options:[
+      {id:'ADO', label:'ADO', next:'calculo_sueldo_ADO'},
+      {id:'TRT', label:'TRT/SUR INTERMEDIO', next:'calculo_sueldo_TRT'},
+      {id:'VOLKBUS', label:'VOLKBUS', next:'calculo_sueldo_VOLKBUS'},
+      {id:'REGRESAR', label:'REGRESAR', next:'sueldo_menu'}
+    ]
+  },
+
+  calculo_sueldo_ADO:{
+    type:'message',
+    id:'calculo_sueldo_ADO',
+    text:`Identifica el ingreso total de tu viaje sin IVA y divídelo entre el precio del boleto de tu viaje realizado; el resultado será tu factor pasajero.
+Localiza el factor pasajero en la Tabla de pago que te corresponda y toma el factor que se ubica en la columna PK y PP.
+Multiplica el factor PK por el kilometraje realizado en tu viaje y obtendrás el pago por kilómetro.
+Multiplica el factor PP por el kilometraje realizado en tu viaje y obtendrás el pago por pasajero transportado.
+La suma de ambos pagos es el sueldo bruto que percibirás por el viaje realizado antes de impuestos o descuentos de cartera.
+Si tienes dudas te invitamos a que visualices el siguiente video:`,
+    attachments:[{type:'video', url:'https://vimeo.com/1104559211?share=copy'}]
+  },
+  calculo_sueldo_TRT:{
+    type:'message',
+    id:'calculo_sueldo_TRT',
+    text:`Identifica el ingreso total de tu viaje sin IVA multiplícalo por el 95%; y el resultado divídelo entre el total de kilometros recorridos; esto nos da tu factor ingreso-kilómetro;
+Ubica tu FIK en la tabla de pago, entre el rango mínimo,medio y máximo tomando el factor que se ubica en las columnas PK y PP;
+Multiplica el factor de la columna PK por el total de kilómetros y esto nos dará el pago por kilometraje;
+Multiplica el factor de la columna PP por el total de kilómetros y esto nos dará el pago por pasajero transportado;
+La suma de ambos pagos es considerado como tu sueldo bruto antes de impuestos u otros descuentos de cartera.
+Si tienes dudas te invitamos a que visualices el siguiente video:`,
+    attachments:[{type:'video', url:'https://vimeo.com/1104559136?share=copy'}]
+  },
+  calculo_sueldo_VOLKBUS:{
+    type:'message',
+    id:'calculo_sueldo_VOLKBUS',
+    text:`Debes de tener en cuenta que tu cálculo se genera de manera semanal tomando el corte de LUNES a DOMINGO;
+Identifica el total de tus ingresos de tus secuencias realizadas por día y divídelo entre el total de tus kilómetros recorridos; esto nos dará el factor INGRESO-KILOMETRO: FIK;
+Ubica tu FIK en la tabla de pago, entre el rango mínimo,medio y superior toma el factor de la columna total y multiplícalo por los kilómetros recorridos; el resultado será tu comisión diaria;
+El proceso se repite por cada uno de los días de la semana laborados para si tener tu comisión semanal antes de impuestos u otros descuentos de cartera;
+Recuerda que tienes un sueldo de garantía el cual se te pagará en caso de no haber obtenido factor.
+Si tienes dudas te invitamos a que visualices el siguiente video:`,
+    attachments:[{type:'video', url:'https://vimeo.com/1104558946?share=copy'}]
+  },
+
+  conceptos_nomina:{ type:'message', id:'conceptos_nomina', text:'IMSS, ISR, INFONAVIT, Anticipo de Sueldo, Gastos no comprobados, Pistas no comprobadas, Uniformes, Fonacot, Paga Daños e Inspección.'},
+
+  cuanto_isr_marca:{
+    type:'question',
+    id:'cuanto_isr_marca',
+    prompt:'SELECCIONA TU MARCA',
+    options:[
+      {id:'ADO', label:'ADO', next:'isr_ADO'},
+      {id:'TRT', label:'TRT/SUR INTERMEDIO', next:'isr_TRT'},
+      {id:'VOLKBUS', label:'VOLKBUS', next:'isr_VOLKBUS'},
+      {id:'REGRESAR', label:'REGRESAR', next:'sueldo_menu'}
+    ]
+  },
+  isr_ADO:{ type:'message', id:'isr_ADO', text:'Por 28 días $2,463.85, Por 30 días $2,639.84, por 31 días $2,727.83.'},
+  isr_TRT:{ type:'message', id:'isr_TRT', text:'Por 28 días $1,732.06, Por 30 días $1,855.78, por 31 días $1,917.64.'},
+  isr_VOLKBUS:{ type:'message', id:'isr_VOLKBUS', text:'Tú perteneces al régimen General de Ley, por lo tanto tus impuestos, van en función a tus percepciones brutas.'},
+
+  cuanto_imss_marca:{
+    type:'question',
+    id:'cuanto_imss_marca',
+    prompt:'SELECCIONA TU MARCA',
+    options:[
+      {id:'ADO', label:'ADO', next:'imss_ADO'},
+      {id:'TRT', label:'TRT/SUR INTERMEDIO', next:'imss_TRT'},
+      {id:'VOLKBUS', label:'VOLKBUS', next:'imss_VOLKBUS'},
+      {id:'REGRESAR', label:'REGRESAR', next:'sueldo_menu'}
+    ]
+  },
+  imss_ADO:{ type:'message', id:'imss_ADO', text:'Por 28 días $873.61, Por 30 días $936.01, por 31 días $967.21.'},
+  imss_TRT:{ type:'message', id:'imss_TRT', text:'Por 28 días $602.85, Por 30 días $645.91, por 31 días $667.44.'},
+  imss_VOLKBUS:{ type:'message', id:'imss_VOLKBUS', text:'Tu perteneces al regimen General de Ley, por lo tanto tus impuestos, van en función a tus percepciones brutas.'},
+
+  cuota_sindical_marca:{
+    type:'question',
+    id:'cuota_sindical_marca',
+    prompt:'SELECCIONA TU MARCA',
+    options:[
+      {id:'ADO', label:'ADO', next:'cuota_ADO'},
+      {id:'TRT', label:'TRT/SUR INTERMEDIO', next:'cuota_TRT'},
+      {id:'VOLKBUS', label:'VOLKBUS', next:'cuota_VOLKBUS'},
+      {id:'REGRESAR', label:'REGRESAR', next:'sueldo_menu'}
+    ]
+  },
+  cuota_ADO:{ type:'message', id:'cuota_ADO', text:'Se multiplica $11.50 por todos los dias trabajados del mes inmediato anterior.'},
+  cuota_TRT:{ type:'message', id:'cuota_TRT', text:'Se descuenta el 2% sobre tu percepción del viaje realizado.'},
+  cuota_VOLKBUS:{ type:'message', id:'cuota_VOLKBUS', text:'Tú perteneces al régimen General de Ley, por lo tanto tus impuestos, van en función a tus percepciones brutas.'},
+
+  descuento_fondo_marca:{
+    type:'question',
+    id:'descuento_fondo_marca',
+    prompt:'SELECCIONA TU MARCA',
+    options:[
+      {id:'ADO', label:'ADO', next:'fondo_ADO'},
+      {id:'SUR', label:'SUR INTERMEDIO', next:'fondo_SUR'},
+      {id:'TRT_INTERMEDI', label:'TRT INTERMEDI', next:'fondo_TRT_INTERMEDI'},
+      {id:'VOLKBUS', label:'VOLKBUS', next:'fondo_VOLKBUS'},
+      {id:'REGRESAR', label:'REGRESAR', next:'sueldo_menu'}
+    ]
+  },
+  fondo_ADO:{ type:'message', id:'fondo_ADO', text:'$1,587.78 mensual'},
+  fondo_SUR:{ type:'message', id:'fondo_SUR', text:'$1,013.64 mensual'},
+  fondo_TRT_INTERMEDI:{ type:'message', id:'fondo_TRT_INTERMEDI', text:'$1,013.64 mensual'},
+  fondo_VOLKBUS:{ type:'message', id:'fondo_VOLKBUS', text:'Tu contrato colectivo no cuenta con esta prestación'},
+
+  fecha_fondo:{ type:'message', id:'fecha_fondo', text:'Tienes hasta el último día del mes, siempre y cuando hayas cubierto tu deuda de cartera (IMSS,ISR,INFONAVIT,PAGO x DAÑOS).'},
+
+  excedentes:{ type:'message', id:'excedentes', text:'Son los montos de impuestos que no alcanzaste a cubrir dentro del mes (ISR, IMSS e INFONAVIT).'},
+
+  impuestos_link:{
+    type:'message',
+    id:'impuestos_link',
+    text:'Para una mejor administración de tus finanzas te invito a consultar el siguiente Link de App Saldos por conductor.',
+    attachments:[{type:'image', url:'https://i.imgur.com/W6iniQu.png', link:'https://bit.ly/45Fk1D1'}]
+  },
+
+  incentivos_marca:{
+    type:'question',
+    id:'incentivos_marca',
+    prompt:'SELECCIONA TU MARCA',
+    options:[
+      {id:'INC_ADO', label:'ADO', next:'incentivos_ADO'},
+      {id:'INC_TRT', label:'TRT/SUR INTERMEDIO', next:'incentivos_TRT'},
+      {id:'INC_VOLKBUS', label:'VOLKBUS', next:'incentivos_VOLKBUS'},
+      {id:'REGRESAR', label:'REGRESAR', next:'menuPrincipal'}
+    ]
+  },
+
+  incentivos_ADO:{
+    type:'question',
+    id:'incentivos_ADO',
+    prompt:'ESTOS SON LOS DIFERENTES INCENTIVOS QUE RECIBES, SELECCIONA ALGUNO PARA SABER MAS',
+    options:[
+      {id:'ICO', label:'ICO', next:'ico_msg'},
+      {id:'INS', label:'INS', next:'ins_msg'},
+      {id:'REGRESAR', label:'REGRESAR', next:'incentivos_marca'}
+    ]
+  },
+  ico_msg:{ type:'message', id:'ico_msg', text:'Es el Incentivo por Cumplimiento Operativo. Aplica para los conductores que hayan trabajado durante todo el mes de acuerdo a su contrato colectivo sin registrar ninguna incidencia; se paga a partir del día 15 de cada mes.'},
+  ins_msg:{ type:'message', id:'ins_msg', text:'Es el Incentivo por No Siniestralidad. Pago cuatrimestral y anual. Requisitos: cumplir con 65% o más del kilometraje programado y ganar los pagos cuatrimestrales.'},
+
+  incentivos_TRT:{
+    type:'question',
+    id:'incentivos_TRT',
+    prompt:'ESTOS SON LOS DIFERENTES INCENTIVOS QUE RECIBES, SELECCIONA ALGUNO PARA SABER MAS',
+    options:[
+      {id:'IBECC', label:'IBECC', next:'ibecc_msg'},
+      {id:'ICO', label:'ICO', next:'ico_msg'},
+      {id:'INS', label:'INS', next:'ins_msg'},
+      {id:'REGRESAR', label:'REGRESAR', next:'incentivos_marca'}
+    ]
+  },
+  ibecc_msg:{ type:'message', id:'ibecc_msg', text:'Es el Incentivo por Boleto Efectivo Cortado en Camino; cálculo del día 1 al 30 y pago a partir del día 5; aplica para conductor intermedio sin ayudante y se determina por venta a bordo.'},
+  incentivos_VOLKBUS:{ type:'message', id:'incentivos_VOLKBUS', text:'Tu contrato colectivo no cuenta con un esquema de incentivos.'},
+
+  proceso_cova:{
+    type:'question',
+    id:'proceso_cova',
+    prompt:'PROCESO COVA',
+    options:[
+      {id:'ACCIDENTE_SIIAB', label:'¿Qué hacer en caso de accidente o falla siiab?', next:'accidente_siiab'},
+      {id:'NO_REPORTE_FIN_TURNO', label:'¿Qué hago si la SIIAB no me dió el reporte y el fin de turno ?', next:'no_reporte_fin_turno'},
+      {id:'MAQUINA_FALLO', label:'¿Qué debo hacer si la máquina SIIAB falló y emitió boletos de más?', next:'maquina_fallo'},
+      {id:'DATOS_TARJETA_INCORRECTOS', label:'¿Qué hago si los datos de mi tarjeta de viaje no están correctos? ', next:'datos_tarjeta'},
+      {id:'REQUISITOS_LIQUIDAR', label:'¿Qué requisitos debo tener para liquidar mi viaje en Recaudación?', next:'requisitos_liquidar'},
+      {id:'TERMINALES_AUTORIZADAS', label:'¿Cuáles son las terminales autorizadas para realizar depositos en camino?', next:'terminales_autorizadas'},
+      {id:'COMPROBANTE_LIQUIDACION', label:'¿Cuál es mi comprobante de liquidación?', next:'comprobante_liquidacion'},
+      {id:'REGRESAR', label:'REGRESAR', next:'menuPrincipal'}
+    ]
+  },
+
+  accidente_siiab:{ type:'message', id:'accidente_siiab', text:'Repórtalo al 55-32-24-13-21 o bien haz click en el siguiente boton.', attachments:[{type:'link', title:'🚌 CONTIGO EN CAMINO 📞', url:'https://drive.google.com/file/d/1Mm2HUwPhXawX0HhAYHJ8MnnqamkFcCGe/view?usp=drivesdk'}]},
+  no_reporte_fin_turno:{ type:'message', id:'no_reporte_fin_turno', text:'Repórtalo con tráfico y solicita un detallado de tu venta en el área de Recaudación.'},
+  maquina_fallo:{ type:'message', id:'maquina_fallo', text:'Levanta un reporte en el área de mantenimiento y solicita un pase de aclaración por cancelación con tu preceptor y recaba firma del Gerente de Operaciones.'},
+  datos_tarjeta:{ type:'message', id:'datos_tarjeta', text:'No la aceptes y pide en ese momento una nueva tarjeta con los controladores de tráfico.'},
+  requisitos_liquidar:{ type:'message', id:'requisitos_liquidar', text:'Tarjeta de viaje confirmada por tráfico, efectivo, boletos de canjes, depósitos en camino y gastos autorizados.', attachments:[{type:'video', url:'https://vimeo.com/1104559098?share=copy'}]},
+  terminales_autorizadas:{ type:'message', id:'terminales_autorizadas', text:'Recaudación Cárdenas, Terminal Coatzacoalcos, Terminal La Venta, Terminal Cárdenas, Catab, Terminal Emiliano Zapata, Terminal Tenosique, Terminal Ciudad del Carmen, Recaudación Tuxtla, Terminal Tuxtla, Terminal Mérida.'},
+  comprobante_liquidacion:{ type:'message', id:'comprobante_liquidacion', text:'Al término de tu liquidación; siempre que no debas AVA o abones a tu deuda, el área de Recaudación te emitirá un PASE DE NO ADEUDO.'},
+
+  creditos_externos:{
+    type:'question',
+    id:'creditos_externos',
+    prompt:'SELECCIONA EL TIPO DE CREDITO',
+    options:[
+      {id:'INFONAVIT', label:'INFONAVIT', next:'infonavit'},
+      {id:'FONACOT', label:'FONACOT', next:'fonacot'},
+      {id:'REGRESAR', label:'REGRESAR', next:'menuPrincipal'}
+    ]
+  },
+
+  infonavit:{
+    type:'question',
+    id:'infonavit',
+    prompt:'INFONAVIT',
+    options:[
+      {id:'REQ_INFONAVIT', label:'¿Cuáles son los requisitos para obtener un crédito de Infonavit?', next:'req_infonavit'},
+      {id:'AVISO_RETENCION', label:'Cómo puedo obtener mi aviso de retension y/o actualizacion de factor de descuento?', next:'aviso_infonavit'},
+      {id:'REGRESAR', label:'REGRESAR', next:'creditos_externos'}
+    ]
+  },
+  req_infonavit:{ type:'message', id:'req_infonavit', text:`Identificación oficial, acta de nacimiento, CURP, comprobante de domicilio y estado de cuenta bancario con CLABE, cédula fiscal;
+ser derechohabiente Infonavit, tener relación laboral vigente, tener entre 130 y 156 semanas y contar con 1080 puntos (puede variar), realizar el curso en línea, solicitud de inscripción de crédito, no exceder de edad máxima y cubrir gastos adicionales.`},
+  aviso_infonavit:{ type:'message', id:'aviso_infonavit', text:'Desde el portal "Mi cuenta Infonavit" en la opción -Micrédito - Aviso de suspención, Retención y Modificación de descuento', attachments:[{type:'video', url:'https://vimeo.com/1104559004'}]},
+
+  fonacot:{
+    type:'question',
+    id:'fonacot',
+    prompt:'FONACOT',
+    options:[
+      {id:'REQ_FONACOT', label:'¿Cuáles son los requisitos para obtener un crédito Fonacot?', next:'req_fonacot'},
+      {id:'CONST_PERCEPCIONES', label:'¿Cómo puedo obtener una constancia de percepciones?', next:'constancia_percepciones'},
+      {id:'REGRESAR', label:'REGRESAR', next:'creditos_externos'}
+    ]
+  },
+  req_fonacot:{ type:'message', id:'req_fonacot', text:`Para obtener un crédito FONACOT, necesitas empleo estable con antigüedad mínima de 6 meses y presentar: identificación oficial, comprobante de domicilio (no mayor a 2 meses), últimos cuatro recibos de nómina y estado de cuenta bancario.`},
+  constancia_percepciones:{ type:'message', id:'constancia_percepciones', text:'Acude al área de Relaciones industriales de RH para que puedan extenderte dicho documento.'},
+
+}; // end nodes
+
+// history stack for REGRESAR
+let historyStack = [];
+let currentNode = null;
+
+function presentNode(nodeId, pushToHistory=true){
+  const node = nodes[nodeId];
+  if(!node){
+    console.warn('Node not found', nodeId);
+    return;
+  }
+  currentNode = nodeId;
+
+  if(node.type === 'question'){
+    // render question and options
+    addBotBubble(`<strong>${escapeHtml(node.prompt)}</strong>`, node.options.map(o=>({label:o.label, next:o.next, primary:false})));
+  } else if(node.type === 'message'){
+    let html = `<div>${escapeHtml(node.text).replace(/\n/g,'<br>')}</div>`;
+    if(node.attachments && node.attachments.length){
+      node.attachments.forEach(att=>{
+        if(att.type === 'image'){
+          html += `<a class="link-card" href="${att.link||att.url}" target="_blank" rel="noopener"><img src="${att.url}" alt="" style="max-width:100%;border-radius:6px"><div style="margin-top:6px;font-weight:600">${escapeHtml(att.title||att.link||'Ver recurso')}</div></a>`;
+        } else if(att.type === 'video'){
+          html += `<div class="small" style="margin-top:8px">Video: <a href="${att.url}" target="_blank" rel="noopener">${att.url}</a></div>`;
+        } else if(att.type === 'link'){
+          html += `<a class="link-card" href="${att.url}" target="_blank" rel="noopener">${escapeHtml(att.title||att.url)}</a>`;
+        }
+      });
+    }
+    addBotBubble(html, [{label:'REGRESAR', next:'__REGRESAR__', primary:true}]);
+  }
+  // push to history when navigating to question nodes (so REGRESAR has previous)
+  if(pushToHistory && currentNode && nodeId !== 'main'){
+    // if last pushed is different, push previous
+    // handled in handleOption when user selects; leave simple here.
+  }
+}
+
+function handleOption(opt){
+  // opt is object {label, next}
+  addUserBubble(opt.label || opt);
+
+  if(opt.next === '__REGRESAR__' || opt.next === 'REGRESAR'){
+    goBack();
+    return;
+  }
+
+  const nextId = opt.next;
+  // push current node to history to allow REGRESAR (only for question -> message transitions and question->question)
+  if(currentNode){
+    historyStack.push(currentNode);
+  }
+  presentNode(nextId, false);
+}
+
+function goBack(){
+  if(historyStack.length === 0){
+    presentNode('main', false);
+    return;
+  }
+  const prev = historyStack.pop();
+  presentNode(prev, false);
+}
+
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// start conversation
+function start(){
+  chatEl.innerHTML = '';
+  historyStack = [];
+  presentNode('main', false);
+  scrollEnd();
+}
+
+start();
+
+restartBtn.addEventListener('click', ()=> start());
+
+// accessibility quick restart
+document.addEventListener('keydown', (e)=>{ if(e.key === 'r' && (e.ctrlKey||e.metaKey)){ start(); } });
+</script>
+</body>
+</html>
