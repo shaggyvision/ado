@@ -150,7 +150,7 @@
     background:linear-gradient(180deg, #fff,#fafafa);
     border:1px solid rgba(0,0,0,0.05);
     text-decoration:none;
-    color:transparent;
+    color:white;
   }
   .small{
     font-size:13px;
@@ -540,7 +540,7 @@ function presentNode(nodeId, pushToHistory=true){
     if(node.attachments && node.attachments.length){
       node.attachments.forEach(att=>{
         if(att.type === 'image'){
-          html += `<a class="link-card" href="${att.link||att.url}" ><img src="${att.url}" alt="" style="max-width:100%;border-radius:6px"><div style="margin-top:6px;font-weight:600">${escapeHtml(att.title||att.link||'Ver recurso')}</div></a>`;
+          html += `<a class="link-card" href="${att.link||att.url}" ><img src="${att.url}" alt="" style="max-width:100%;border-radius:6px"><div style="margin-top:6px;font-weight:600"></div></a>`;
         } else if(att.type === 'video'){
           html += `<div class="small" style="margin-top:8px">Video: <a href="${att.url}" >${att.url}</a></div>`;
         } else if(att.type === 'link'){
