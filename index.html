@@ -73,14 +73,29 @@
   .chat{
     flex:1;
     padding:16px;
-    overflow:auto;
+    overflow-y:auto;      /* aparece solo cuando hay mucho contenido */
+    overflow-x:hidden;    /* evita scroll horizontal */
     display:flex;
     flex-direction:column;
     gap:10px;
+    scroll-behavior:smooth;
     background:
       radial-gradient(circle at top left, rgba(255,255,255,0.6), transparent 10%),
       var(--bg);
-  }
+}
+
+/* Estilo opcional para hacer la barra más elegante */
+.chat::-webkit-scrollbar {
+  width: 8px;
+}
+.chat::-webkit-scrollbar-thumb {
+  background-color: var(--accent);
+  border-radius: 8px;
+}
+.chat::-webkit-scrollbar-track {
+  background: #eee;
+  border-radius: 8px;
+}
   .bubble{
     max-width:78%;
     padding:10px 12px;
