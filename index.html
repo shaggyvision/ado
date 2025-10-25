@@ -156,9 +156,33 @@
     font-size:13px;
     color:var(--muted);
   }
+  /* Lightbox para videos */
+  .lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  .lightbox iframe {
+    width: 90%;
+    height: 80%;
+    border: none;
+    border-radius: 8px;
+  }
+
 </style>
 </head>
 <body>
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <iframe id="lightboxFrame" src="" allowfullscreen></iframe>
+</div>
+
   <div class="container" role="application" aria-label="Chatbot Recaudación">
     <div class="header">
       <div class="info">
@@ -184,6 +208,20 @@
   </div>
 
 <script>
+function openLightbox(videoUrl) {
+  const lb = document.getElementById('lightbox');
+  const frame = document.getElementById('lightboxFrame');
+  frame.src = videoUrl;
+  lb.style.display = 'flex';
+}
+
+function closeLightbox() {
+  const lb = document.getElementById('lightbox');
+  const frame = document.getElementById('lightboxFrame');
+  frame.src = ''; // detiene el video
+  lb.style.display = 'none';
+}
+
 /*
   Chatbot flow derived from kind AdaptiveDialog.txt
   - Each node can be a question with options or a sendActivity (message) then returns a REGRESAR option
@@ -542,8 +580,21 @@ function presentNode(nodeId, pushToHistory=true){
         if(att.type === 'image'){
           html += `<a class="link-card" href="${att.link||att.url}" ><img src="${att.url}" alt="" style="max-width:100%;border-radius:6px"><div style="margin-top:6px;font-weight:600"></div></a>`;
         } else if(att.type === 'video'){
-          html += `<div class="small" style="margin-top:8px">Video: <a href="${att.url}" >${att.url}</a></div>`;
-        } else if(att.type === 'link'){
+  // extrae la URL del iframe de Vimeo
+  const vimeoUrlMatch = att.url.match(/src="([^"]+)"/);
+  const vimeoUrl = vimeoUrlMatch ? vimeoUrlMatch[1] : '';
+  html += `<div class="small" style="margin-top:8px">
+   <button class="option-btn primary" onclick="openLightbox('${vimeoUrl}')">
+  <img 
+    src="https://shaggyvision.github.io/ado/play.png" 
+    alt="Ver video" 
+    style="width:180px; height:auto; border:none; cursor:pointer;"
+  >
+</button>
+
+  </div>`;
+}
+ else if(att.type === 'link'){
           html += `<a class="link-card" href="${att.url}" >${escapeHtml(att.title||att.url)}</a>`;
         }
       });
@@ -599,6 +650,8 @@ restartBtn.addEventListener('click', ()=> start());
 
 // accessibility quick restart
 document.addEventListener('keydown', (e)=>{ if(e.key === 'r' && (e.ctrlKey||e.metaKey)){ start(); } });
+
+
 </script>
 </body>
 </html>
