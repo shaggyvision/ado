@@ -140,7 +140,7 @@
   .option-btn.primary{
     background:var(--accent);
     color:white;
-  }
+}
   .footer{
     padding:10px;
     border-top:1px solid rgba(0,0,0,0.06);
@@ -191,6 +191,29 @@
     border-radius: 8px;
   }
 
+
+.option-btn.primary{
+    background:var(--accent);
+    color:white;
+}
+
+/* Botones de video sin fondo y centrados */
+.video-btn {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.video-btn img {
+  border-radius: 12px;
+  display: block;
+  margin: 0 auto;
+}
 </style>
 </head>
 <body>
@@ -599,7 +622,7 @@ function presentNode(nodeId, pushToHistory=true){
   const vimeoUrlMatch = att.url.match(/src="([^"]+)"/);
   const vimeoUrl = vimeoUrlMatch ? vimeoUrlMatch[1] : '';
   html += `<div class="small" style="margin-top:8px">
-   <button class="option-btn primary" onclick="openLightbox('${vimeoUrl}')">
+   <button class="option-btn video-btn" onclick="openLightbox('${vimeoUrl}')">
   <img 
     src="https://shaggyvision.github.io/ado/play.png" 
     alt="Ver video" 
