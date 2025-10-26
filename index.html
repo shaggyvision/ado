@@ -82,7 +82,7 @@
   .header .title {
     font-weight: 700;
     color: white;
-  }
+   }
   .header .small {
     color: white;
   }
@@ -181,7 +181,7 @@
     margin-top:8px;
     padding:8px;
     border-radius:8px;
-    background:linear-gradient(180deg, #fff,#fafafa);
+    background:linear-gradient(180deg, #2e008a,#550091);
     border:1px solid rgba(0,0,0,0.05);
     text-decoration:none;
     color:white;
@@ -431,12 +431,7 @@ Si tienes dudas te invitamos a que visualices el siguiente video:`,
   calculo_sueldo_VOLKBUS:{
     type:'message',
     id:'calculo_sueldo_VOLKBUS',
-    text:`Debes de tener en cuenta que tu cálculo se genera de manera semanal tomando el corte de LUNES a DOMINGO;
-Identifica el total de tus ingresos de tus secuencias realizadas por día y divídelo entre el total de tus kilómetros recorridos; esto nos dará el factor INGRESO-KILOMETRO: FIK;
-Ubica tu FIK en la tabla de pago, entre el rango mínimo,medio y superior toma el factor de la columna total y multiplícalo por los kilómetros recorridos; el resultado será tu comisión diaria;
-El proceso se repite por cada uno de los días de la semana laborados para si tener tu comisión semanal antes de impuestos u otros descuentos de cartera;
-Recuerda que tienes un sueldo de garantía el cual se te pagará en caso de no haber obtenido factor.
-Si tienes dudas te invitamos a que visualices el siguiente video:`,
+    text:`Debes de tener en cuenta que tu cálculo se genera de manera semanal tomando el corte de LUNES a DOMINGO; Identifica el total de tus ingresos de tus secuencias realizadas por día y divídelo entre el total de tus kilómetros recorridos; esto nos dará el factor INGRESO-KILOMETRO: FIK; Ubica tu FIK en la tabla de pago, entre el rango mínimo, medio y superior toma el factor de la columna total y multiplícalo por los kilómetros  recorridos; el resultado será tu comisión diaria; El proceso se repite por cada uno de los días de la semana laborados para así obtener tu comisión semanal antes de impuestos u otros descuentos de cartera; Recuerda que tienes un sueldo de garantía el cual se te pagará en caso de no haber obtenido factor. Si tienes dudas te invitamos a que visualices el siguiente video: `,
     attachments:[{type:'video', url:'<iframe src="https://player.vimeo.com/video/1104558946?h=5c22c1a9b4" width="340" height="360" frameborder="0" allowfullscreen></iframe>'}]},
 
 
@@ -485,7 +480,7 @@ Si tienes dudas te invitamos a que visualices el siguiente video:`,
   },
   cuota_ADO:{ type:'message', id:'cuota_ADO', text:'Se multiplica $11.50 por todos los dias trabajados del mes inmediato anterior.'},
   cuota_TRT:{ type:'message', id:'cuota_TRT', text:'Se descuenta el 2% sobre tu percepción del viaje realizado.'},
-  cuota_VOLKBUS:{ type:'message', id:'cuota_VOLKBUS', text:'Tú perteneces al régimen General de Ley, por lo tanto tus impuestos, van en función a tus percepciones brutas.'},
+  cuota_VOLKBUS:{ type:'message', id:'cuota_VOLKBUS', text:'Se descuenta el 2% sobre tu percepción de los  viajes realizados. '},
 
   descuento_fondo_marca:{
     type:'question',
@@ -537,8 +532,8 @@ Si tienes dudas te invitamos a que visualices el siguiente video:`,
       {id:'REGRESAR', label:'REGRESAR', next:'incentivos_marca'}
     ]
   },
-  ico_msg:{ type:'message', id:'ico_msg', text:'Es el Incentivo por Cumplimiento Operativo. Aplica para los conductores que hayan trabajado durante todo el mes de acuerdo a su contrato colectivo sin registrar ninguna incidencia; se paga a partir del día 15 de cada mes.'},
-  ins_msg:{ type:'message', id:'ins_msg', text:'Es el Incentivo por No Siniestralidad. Pago cuatrimestral y anual. Requisitos: cumplir con 65% o más del kilometraje programado y ganar los pagos cuatrimestrales, sin registrar ninguna incidencia.'},
+  ico_msg:{ type:'message', id:'ico_msg', text:'Es el Incentivo por Cumplimiento Operativo.  Aplica para los conductores que hayan trabajado durante todo el mes de acuerdo a su contrato colectivo sin registrar ninguna incidencia como por ejemplo: falta, permiso, curso de reforzamiento, baja, suspensión, incapacidad; se paga de manera mensual  a partir del día 15 de cada mes.   '},
+  ins_msg:{ type:'message', id:'ins_msg', text:'Es el Incentivo por No Siniestralidad. Su pago se genera en dos tipos: 1.- Cuatrimestral, de ENERO-ABRIL; MAYO-AGOSTO; SEPTIEMBRE-DICIEMBRE el cual se paga tres veces al año a partir del día 18 del mes inmediato de cada cuatrimestre; 2.- El anual, se gana al haber obtenido los tres pagos cuatrimestrales; se determina del 1 de septiembre al 31 de agosto del año siguiente y su pago se realiza a partir del día 18 de octubre. Para obtener este incentivo  recuerda cumplir con el 65% o más del kilometraje programado por región, marca y zona y no tener accidente con responsabilidad. '},
 
   incentivos_TRT:{
     type:'question',
@@ -551,7 +546,7 @@ Si tienes dudas te invitamos a que visualices el siguiente video:`,
       {id:'REGRESAR', label:'REGRESAR', next:'incentivos_marca'}
     ]
   },
-  ibecc_msg:{ type:'message', id:'ibecc_msg', text:'Es el Incentivo por Boleto Efectivo Cortado en Camino; cálculo del día 1 al 30 y pago a partir del día 5; aplica para conductor intermedio sin ayudante y se determina por venta a bordo, siempre y cuando no tengas reporte de INSPECCION ni anomalias de AVA.'},
+  ibecc_msg:{ type:'message', id:'ibecc_msg', text:'Es el Incentivo por Boleto Efectivo Cortado en Camino. Su cálculo es del día 1 al 30 de cada mes  y su pago se realiza a partir del dia 5 del siguiente mes; Aplica para conductor de intermedio sin ayudante y se determina por la venta a bordo realizada, Puedes obtenerlo siempre y cuando no tengas ningún reporte de INSPECCION ni anomalias de AVA.'},
   incentivos_VOLKBUS:{ type:'message', id:'incentivos_VOLKBUS', text:'Tu contrato colectivo no cuenta con un esquema de incentivos.'},
 
   proceso_cova:{
@@ -600,8 +595,7 @@ Si tienes dudas te invitamos a que visualices el siguiente video:`,
       {id:'REGRESAR', label:'REGRESAR', next:'creditos_externos'}
     ]
   },
-  req_infonavit:{ type:'message', id:'req_infonavit', text:`Identificación oficial, acta de nacimiento, CURP, comprobante de domicilio y estado de cuenta bancario con CLABE, cédula fiscal;
-ser derechohabiente Infonavit, tener relación laboral vigente, tener entre 130 y 156 semanas y contar con 1080 puntos (puede variar), realizar el curso en línea, solicitud de inscripción de crédito, no exceder de edad máxima y cubrir gastos adicionales.`},
+  req_infonavit:{ type:'message', id:'accidente_siiab', text:' Accede al siguiente enlace para conocer todos los requisitos que necesitas cumplir para obtener tu crédito INFONAVIT y descubre lo sencillo que es:', attachments:[{type:'link', title:'🏠 REQUISITOS INFONAVIT', url:'https://portalmx.infonavit.org.mx/wps/wcm/connect/5533bb6b-262f-4855-b9ec-d3106baaa141/Requisitos_y_documentos_Comprar.pdf?MOD=AJPERES'}]}, 
   aviso_infonavit:{ type:'message', id:'aviso_infonavit', text:'Desde el portal "Mi cuenta Infonavit" en la opción -Micrédito - Aviso de suspención, Retención y Modificación de descuento', attachments:[{type:'video', url:'<iframe src="https://player.vimeo.com/video/1104559004?h=d3bfd28b15" width="340" height="360" frameborder="0" allowfullscreen></iframe>'}]},
 
   fonacot:{
@@ -614,7 +608,7 @@ ser derechohabiente Infonavit, tener relación laboral vigente, tener entre 130 
       {id:'REGRESAR', label:'REGRESAR', next:'creditos_externos'}
     ]
   },
-  req_fonacot:{ type:'message', id:'req_fonacot', text:`Para obtener un crédito FONACOT, necesitas empleo estable con antigüedad mínima de 6 meses y presentar: identificación oficial, comprobante de domicilio (no mayor a 2 meses), últimos cuatro recibos de nómina y estado de cuenta bancario.`},
+  req_fonacot:{ type:'message', id:'accidente_siiab', text:' Accede al siguiente enlace para conocer todos los requisitos que necesitas cumplir para obtener tu crédito FONACOT y descubre lo sencillo que es agendar tu cita de manera rápida y segura:', attachments:[{type:'link', title:'💲 💰 REQUISITOS FONACOT', url:' https://shaggyvision.github.io/ado/REQFONACOT.pdf '}]}, 
   constancia_percepciones:{ type:'message', id:'constancia_percepciones', text:'Acude al área de Relaciones industriales de RH para que puedan extenderte dicho documento.'},
 
 }; // end nodes
