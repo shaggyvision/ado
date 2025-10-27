@@ -279,9 +279,22 @@ function openLightbox(videoUrl) {
 function openPdf(pdfUrl) {
   const lb = document.getElementById('lightbox');
   const frame = document.getElementById('lightboxFrame');
-  frame.src = 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(pdfUrl);
+  
+  // Mostrar el lightbox con fondo un poco más claro para que se vea la carga
   lb.style.display = 'flex';
+  lb.style.background = 'rgba(0, 0, 0, 0.7)';
+
+  // Cargar visor de Google Docs
+  const viewerUrl = 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(pdfUrl);
+  frame.style.background = '#fff'; // Fondo blanco para el iframe
+  frame.src = viewerUrl;
+
+  // Forzar re-render después de un pequeño retardo en móviles
+  setTimeout(() => {
+    frame.contentWindow?.focus?.();
+  }, 1000);
 }
+
 
 
 function closeLightbox() {
