@@ -176,16 +176,17 @@
     border-radius:8px;
     cursor:pointer;
   }
-  .link-card{
-    display:block;
-    margin-top:8px;
-    padding:8px;
-    border-radius:8px;
-    background:linear-gradient(180deg, #2e008a,#550091);
-    border:1px solid rgba(0,0,0,0.05);
-    text-decoration:none;
-    color:white;
-  }
+ .link-card {
+  display:block;
+  margin-top:8px;
+  padding:8px;
+  border-radius:8px;
+  background: transparent;        /* fondo transparente */
+  border: none;                   /* sin borde */
+  text-decoration:none;
+  color: inherit;                 /* usa el color del texto del entorno */
+}
+
   .small{
     font-size:13px;
     color:var(--muted);
@@ -275,6 +276,13 @@ function openLightbox(videoUrl) {
   frame.src = videoUrl;
   lb.style.display = 'flex';
 }
+function openPdf(pdfUrl) {
+  const lb = document.getElementById('lightbox');
+  const frame = document.getElementById('lightboxFrame');
+  frame.src = pdfUrl + '#toolbar=0'; // abre PDF sin barra de herramientas
+  lb.style.display = 'flex';
+}
+
 
 function closeLightbox() {
   const lb = document.getElementById('lightbox');
@@ -565,7 +573,7 @@ Si tienes dudas te invitamos a que visualices el siguiente video:`,
     ]
   },
 
-  accidente_siiab:{ type:'message', id:'accidente_siiab', text:'Repórtalo al 55-32-24-13-21 o bien haz click en el siguiente boton.', attachments:[{type:'link', title:'🚌 CONTIGO EN CAMINO 📞', url:'https://drive.google.com/file/d/1Mm2HUwPhXawX0HhAYHJ8MnnqamkFcCGe/view?usp=drivesdk'}]},
+  accidente_siiab:{ type:'message', id:'accidente_siiab', text:'Repórtalo al 55-32-24-13-21 o bien haz click en el siguiente boton.', attachments:[{type:'link', title:'🚌 CONTIGO EN CAMINO 📞', url:'https://shaggyvision.github.io/ado/CONTIGOENELCAMINO.pdf'}]},
   no_reporte_fin_turno:{ type:'message', id:'no_reporte_fin_turno', text:'Repórtalo con tráfico y solicita un detallado de tu venta en el área de Recaudación.'},
   maquina_fallo:{ type:'message', id:'maquina_fallo', text:'Levanta un reporte en el área de mantenimiento y solicita un pase de aclaración por cancelación con tu preceptor y recaba firma del Gerente de Operaciones.'},
   datos_tarjeta:{ type:'message', id:'datos_tarjeta', text:'No la aceptes y pide en ese momento una nueva tarjeta con los controladores de tráfico.'},
@@ -608,7 +616,7 @@ Si tienes dudas te invitamos a que visualices el siguiente video:`,
       {id:'REGRESAR', label:'REGRESAR', next:'creditos_externos'}
     ]
   },
-  req_fonacot:{ type:'message', id:'accidente_siiab', text:' Accede al siguiente enlace para conocer todos los requisitos que necesitas cumplir para obtener tu crédito FONACOT y descubre lo sencillo que es agendar tu cita de manera rápida y segura:', attachments:[{type:'link', title:'💲 💰 REQUISITOS FONACOT', url:' https://shaggyvision.github.io/ado/REQFONACOT.pdf '}]}, 
+  req_fonacot:{ type:'message', id:'accidente_siiab', text:' Accede al siguiente enlace para conocer todos los requisitos que necesitas cumplir para obtener tu crédito FONACOT y descubre lo sencillo que es agendar tu cita de manera rápida y segura:', attachments:[{type:'link', title:'💲 💰 REQUISITOS FONACOT', url:' https://shaggyvision.github.io/ado/REQFONACOT.pdf'}]}, 
   constancia_percepciones:{ type:'message', id:'constancia_percepciones', text:'Acude al área de Relaciones industriales de RH para que puedan extenderte dicho documento.'},
 
 }; // end nodes
@@ -650,8 +658,13 @@ function presentNode(nodeId, pushToHistory=true){
   </div>`;
 }
  else if(att.type === 'link'){
-          html += `<a class="link-card" href="${att.url}" >${escapeHtml(att.title||att.url)}</a>`;
-        }
+  if(att.url.endsWith('.pdf') || att.url.includes('.pdf')) {
+    html += `<button class="option-btn primary" onclick="openPdf('${att.url}')">${escapeHtml(att.title || '📄 Ver PDF')}</button>`;
+  } else {
+    html += `<a class="link-card" href="${att.url}" target="_blank">${escapeHtml(att.title||att.url)}</a>`;
+  }
+}
+
       });
     }
     addBotBubble(html, [{label:'REGRESAR', next:'__REGRESAR__', primary:true}]);
