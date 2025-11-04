@@ -628,29 +628,47 @@ function speak(text){
   if(!('speechSynthesis' in window)) return;
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = 'es-MX';
-  utter.pitch = 1.05;
+  utter.pitch = 1.14; // tono más femenino
   utter.rate = 1;
   utter.volume = 1;
+
   window.speechSynthesis.cancel();
 
-  // Esperar a que las voces estén cargadas, si no lo están aún
   function setVoiceAndSpeak() {
     const voices = window.speechSynthesis.getVoices();
-    if(voices && voices.length){
-      // Busca voces femeninas en español, preferentemente naturales
-      let v = voices.find(v =>
-        (/es[-_]?mx/i.test(v.lang) || /es[-_]?ES/i.test(v.lang) || /es/i.test(v.lang)) &&
-        (/female|woman|femenina|mujer/i.test(v.name) || v.gender === 'female')
-      );
-      // Si no hay específicamente femenina, busca cualquier voz en español
-      if(!v) v = voices.find(v=> /es[-_]?mx/i.test(v.lang) || /es[-_]?ES/i.test(v.lang) || /es/i.test(v.lang));
-      // Ejemplo: Preferir Google voz si existe, que suele ser menos robotizada en Chrome
-      if(!v) v = voices.find(v=> /Google/i.test(v.name) && /es/i.test(v.lang));
-      // Asignar voz si se encontró
-      if(v) utter.voice = v;
-    }
+
+    // 1. VOZ FEMENINA GOOGLE (natural, Chrome)
+    let v = voices.find(v =>
+      v.lang === 'es-MX' && /Google.*Femenina|Female|Mujer/i.test(v.name)
+    );
+
+    // 2. VOZ FEMENINA ESPAÑOL LATINO
+    if(!v) v = voices.find(v =>
+      v.lang.startsWith('es') && /Femenina|Female|Mujer/i.test(v.name)
+    );
+
+    // 3. VOZ GOOGLE ESPAÑOL (sin género explícito)
+    if(!v) v = voices.find(v =>
+      v.lang === 'es-MX' && /Google/i.test(v.name)
+    );
+
+    // 4. CUALQUIER VOZ ESPAÑOL
+    if(!v) v = voices.find(v => v.lang.startsWith('es'));
+
+    // OPCIONAL: Para debug, puedes mostrar los nombres en consola
+    // console.log(voices.map(v=>v.name + ' - ' + v.lang));
+
+    if(v) utter.voice = v;
     window.speechSynthesis.speak(utter);
   }
+
+  // Asegura que las voces estén cargadas antes de hablar
+  if (window.speechSynthesis.getVoices().length === 0) {
+    window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+  } else {
+    setVoiceAndSpeak();
+  }
+}
 
   // En algunos navegadores hay que esperar a que se carguen las voces
   if (window.speechSynthesis.getVoices().length === 0) {
