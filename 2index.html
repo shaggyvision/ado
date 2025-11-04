@@ -101,15 +101,15 @@ body{
   user-select: none;
 }
 .robot-card {
-  width:120px;
-  background: linear-gradient(180deg,#f3f4f6,#eceff1);
-  border-radius:16px;
-  padding:8px;
-  box-shadow: 0 8px 30px rgba(15,20,25,0.14);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:6px;
+  width: 120px;
+  background: transparent; /* Fondo completamente transparente */
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 8px 30px rgba(15, 20, 25, 0.14);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 .robot-face {
   width:84px;
@@ -160,7 +160,7 @@ button:focus { outline: 3px solid rgba(106,13,173,0.2); outline-offset:2px; }
 <span id="mic-icon">🎤</span>
 <span id="mic-text">Hablar</span>
 </button>
-<div class="small" id="mic-indicator">Toca y habla — formato: "Quiero saber mi sueldo"</div>
+
 </div>
 </div>
 <div aria-label="Chatbot Recaudación" class="container" role="application">
