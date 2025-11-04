@@ -631,20 +631,34 @@ function speak(text){
   utter.pitch = 1.05;
   utter.rate = 1;
   utter.volume = 1;
-
-  utter.onstart = () => { /* could add small visual cue on GIF (not altering GIF) */ };
-  utter.onend = () => { };
   window.speechSynthesis.cancel();
-  const voices = window.speechSynthesis.getVoices();
-  if(voices && voices.length){
-    let v = voices.find(v=> /es[-_]?mx/i.test(v.lang) && /female|woman|mujer|female/i.test(v.name));
-    if(!v) v = voices.find(v=> /es[-_]?mx/i.test(v.lang));
-    if(!v) v = voices.find(v=> /es/i.test(v.lang));
-    if(v) utter.voice = v;
-  }
-  window.speechSynthesis.speak(utter);
-}
 
+  // Esperar a que las voces estén cargadas, si no lo están aún
+  function setVoiceAndSpeak() {
+    const voices = window.speechSynthesis.getVoices();
+    if(voices && voices.length){
+      // Busca voces femeninas en español, preferentemente naturales
+      let v = voices.find(v =>
+        (/es[-_]?mx/i.test(v.lang) || /es[-_]?ES/i.test(v.lang) || /es/i.test(v.lang)) &&
+        (/female|woman|femenina|mujer/i.test(v.name) || v.gender === 'female')
+      );
+      // Si no hay específicamente femenina, busca cualquier voz en español
+      if(!v) v = voices.find(v=> /es[-_]?mx/i.test(v.lang) || /es[-_]?ES/i.test(v.lang) || /es/i.test(v.lang));
+      // Ejemplo: Preferir Google voz si existe, que suele ser menos robotizada en Chrome
+      if(!v) v = voices.find(v=> /Google/i.test(v.name) && /es/i.test(v.lang));
+      // Asignar voz si se encontró
+      if(v) utter.voice = v;
+    }
+    window.speechSynthesis.speak(utter);
+  }
+
+  // En algunos navegadores hay que esperar a que se carguen las voces
+  if (window.speechSynthesis.getVoices().length === 0) {
+    window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+  } else {
+    setVoiceAndSpeak();
+  }
+}
 function speakAndThen(text, cb){
   if(!('speechSynthesis' in window)){
     if(cb) cb(); return;
