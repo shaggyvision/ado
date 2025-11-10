@@ -732,6 +732,42 @@ restartBtn.addEventListener('click', ()=> start());
 // accessibility quick restart
 document.addEventListener('keydown', (e)=>{ if(e.key === 'r' && (e.ctrlKey||e.metaKey)){ start(); } });
 
+function handleOption(opt){
+  addUserBubble(opt.label || opt);
+
+  if(opt.next === '__REGRESAR__' || opt.next === 'REGRESAR'){
+    goBack();
+    return;
+  }
+
+  // --- NUEVO BLOQUE: Verificar contraseña según marca ---
+  const marcaPasswords = {
+    'ADO': '1234',
+    'TRT/SUR INTERMEDIO': '5678',
+    'VOLKBUS': '9012'
+  };
+
+  // Si el botón seleccionado es una marca protegida
+  if (marcaPasswords[opt.label]) {
+    const pass = prompt(`Introduce la contraseña para ${opt.label}:`);
+    if (pass !== marcaPasswords[opt.label]) {
+      addBotBubble(`⚠️ Contraseña incorrecta para ${opt.label}. Intenta de nuevo, presiona REINICIAR.`);
+      return;
+    } else {
+      addBotBubble(`🔓 Acceso autorizado para ${opt.label}.`);
+    }
+  }
+  // -----------------------------------------------------
+
+  const nextId = opt.next;
+  if(currentNode){
+    historyStack.push(currentNode);
+  }
+  presentNode(nextId, false);
+}
+
+
+
 
 </script>
 </body>
